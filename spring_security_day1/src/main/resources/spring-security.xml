@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+       http://www.springframework.org/schema/security
+       http://www.springframework.org/schema/security/spring-security-4.2.xsd">
+    <security:http>
+
+<!--        pattern:需要拦截的路径
+            accsess:拦截方式
+            isFullyAuthenticated()该资源需要认证才可以被访问
+            -->
+<!--        <security:intercept-url pattern="/productAdd" access="permitAll()"></security:intercept-url>-->
+        <security:intercept-url pattern="/index" access="permitAll()"></security:intercept-url>
+        <security:intercept-url pattern="/toLogin" access="permitAll()"></security:intercept-url>
+        <security:intercept-url pattern="/securityLogin" access="permitAll()"></security:intercept-url>
+        <security:intercept-url pattern="/productAdd" access="hasRole('ROLE_ADMIN')"></security:intercept-url>
+        <security:intercept-url pattern="/productDel" access="hasRole('ROLE_ADMIN')"></security:intercept-url>
+        <security:intercept-url pattern="/productList" access="hasRole('ROLE_USER')"></security:intercept-url>
+        <security:intercept-url pattern="/productUpdate" access="hasRole('ROLE_USER')"></security:intercept-url>
+        <security:intercept-url pattern="/**" access="isFullyAuthenticated()"></security:intercept-url>
+        <!--        login-page:自定义登录页面
+                    login-processing-url:登录请求地址
+                -->
+        <security:form-login login-page="/toLogin" login-processing-url="/securityLogin"
+        default-target-url="/index" authentication-success-handler-ref="myAuthenticationSuccessHandler"
+        authentication-failure-handler-ref="myAuthenticationFailureHandler"></security:form-login>
+
+<!--        自定义权限不足处理-->
+        <security:access-denied-handler error-page="/error"></security:access-denied-handler>
+<!--        关闭spring security 的 crsf机制-->
+        <security:csrf disabled="true"></security:csrf>
+    </security:http>
+
+<!--   authentication-manager:认证管理器-->
+    <security:authentication-manager>
+        <security:authentication-provider user-service-ref="myUserDetailsService">
+<!--            <security:user-service>-->
+<!--                <security:user name="zhangsan" password="123456" authorities="ROLE_USER"></security:user>-->
+<!--                <security:user name="lisi" password="123456" authorities="ROLE_ADMIN"></security:user>-->
+<!--            </security:user-service>-->
+        </security:authentication-provider>
+    </security:authentication-manager>
+<!--    自定义登录处理类-->
+    <bean id="myUserDetailsService" class="com.zj.security.MyUserDetailService"></bean>
+<!--    自定义登录成功处理类-->
+    <bean id="myAuthenticationSuccessHandler" class="com.zj.security.MyAuthenticationSuccessHandler"></bean>
+<!--    自定义失败处理类-->
+    <bean id="myAuthenticationFailureHandler" class="com.zj.security.MyAuthenticationFailureHandler"></bean>
+</beans>

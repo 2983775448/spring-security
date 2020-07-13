@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:security="http://www.springframework.org/schema/security"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+            http://www.springframework.org/schema/security
+            http://www.springframework.org/schema/security/spring-security-4.2.xsd">
+    <security:http>
+<!--        资源过滤-->
+        <security:intercept-url pattern="/productList" access="hasRole('ROLE_LIST_PRODUCT')"></security:intercept-url>
+        <security:intercept-url pattern="/productAdd" access="hasRole('ROLE_ADD_PRODUCT')"></security:intercept-url>
+        <security:intercept-url pattern="/productDel" access="hasRole('ROLE_DELETE_PRODUCT')"></security:intercept-url>
+        <security:intercept-url pattern="/productUpdate" access="hasRole('ROLE_UPDATE_PRODUCT')"></security:intercept-url>
+
+        <security:intercept-url pattern="/checkCode" access="permitAll()"/>
+        <security:intercept-url pattern="/js/**" access="permitAll()"></security:intercept-url>
+        <security:intercept-url pattern="/index" access="permitAll()"></security:intercept-url>
+        <security:intercept-url pattern="/login" access="permitAll()"></security:intercept-url>
+        <security:intercept-url pattern="/toLogin" access="permitAll()"></security:intercept-url>
+        <security:intercept-url pattern="/userLogin" access="permitAll()"></security:intercept-url>
+        <security:intercept-url pattern="/**" access="isFullyAuthenticated()"></security:intercept-url>
+
+        <!--        自定义springsecurity过滤器-->
+        <security:custom-filter ref="verifyCodeAuthenticationFilter" before="FORM_LOGIN_FILTER"></security:custom-filter>
+<!--        配置rememberme-->
+        <security:remember-me token-repository-ref="tokenRepository" token-validity-seconds="36000"></security:remember-me>
+
+        <!--        自定义权限不足处理-->
+        <security:access-denied-handler error-page="/error"></security:access-denied-handler>
+        <security:form-login login-page="/toLogin" authentication-success-forward-url="/index"
+        authentication-failure-handler-ref="myAuthenticationFailureHandler"></security:form-login>
+
+        <security:csrf disabled="true"></security:csrf>
+    </security:http>
+
+    <security:authentication-manager>
+        <security:authentication-provider user-service-ref="myUserDetailsService">
+            <security:password-encoder ref="passwordEncoder"></security:password-encoder>
+        </security:authentication-provider>
+    </security:authentication-manager>
+
+    <bean id="myUserDetailsService" class="com.zj.security.MyUserDetailsService"></bean>
+
+    <bean id="myAuthenticationFailureHandler" class="com.zj.security.MyAuthenticationFailureHandler"></bean>
+
+    <bean id="myAuthenticationSuccessHandler" class="com.zj.security.MyAuthenticationSuccessHandler"></bean>
+
+    <bean id="passwordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"></bean>
+
+    <bean id="verifyCodeAuthenticationFilter" class="com.zj.security.VerifyCodeAuthenticationFilter">
+        <property name="authenticationFailureHandler" ref="myAuthenticationFailureHandler"></property>
+    </bean>
+
+    <bean id="tokenRepository" class="org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+
+</beans>
